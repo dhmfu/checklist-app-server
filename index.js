@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const app = express()
 
 const User = require('./models/user')
+const Checklist = require('./models/checklist')
 
 // TODO: move this somewhere else
 const PORT = 3000
@@ -48,13 +49,31 @@ app.post('/login', async (req, res) => {
   const user = await User.findOne({ email }).exec() // TODO: error handling
 
   if (user && await user.checkPassword(password)) {
-    const payload = { name: user.name, email: user.email }
+    const payload = { name: user.name }
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '3d', subject: user._id.toString() })
 
     res.status(200).send(token)
   } else {
     res.status(401).send('Incorrect email or password')
   }
+})
+
+app.post('/checklists/new', jwtGuard, async (req, res) => {
+  const checklistData = req.body
+  const userId = req.user.sub // form jwtGuard
+
+  try {
+    const { name, questions } = checklistData
+
+    const questionsMapped = questions.map(question => ({ checked: false, term: question }))
+  
+    const dbChecklist = await new Checklist({ name, questions: questionsMapped, userId }).save() // TODO: error handling
+  
+    res.status(200).send({ name: dbChecklist.name, questions: dbChecklist.questions, id: dbChecklist._id.toString() })
+  } catch (e) {
+    console.log(e) // TODO: dev only
+    res.status(404).send(JSON.stringify(e))
+  }  
 })
 
 app.listen(PORT, () => {
