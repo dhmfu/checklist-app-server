@@ -36,7 +36,7 @@ app.post('/sign-up', async (req, res) => {
   
     await newUser.save() // TODO: error handling
   
-    res.status(200).send()
+    res.status(201).send()
   } catch (e) {
     console.log(e) // TODO: dev only
     res.status(404).send(JSON.stringify(e))
@@ -46,7 +46,7 @@ app.post('/sign-up', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, password } = req.body
 
-  const user = await User.findOne({ email }).exec() // TODO: error handling
+  const user = await User.findOne({ email }) // TODO: error handling
 
   if (user && await user.checkPassword(password)) {
     const payload = { name: user.name }
@@ -58,7 +58,7 @@ app.post('/login', async (req, res) => {
   }
 })
 
-app.post('/checklists/new', jwtGuard, async (req, res) => {
+app.post('/checklists', jwtGuard, async (req, res) => {
   const checklistData = req.body
   const userId = req.user.sub // form jwtGuard
 
@@ -69,7 +69,28 @@ app.post('/checklists/new', jwtGuard, async (req, res) => {
   
     const dbChecklist = await new Checklist({ name, questions: questionsMapped, userId }).save() // TODO: error handling
   
-    res.status(200).send({ name: dbChecklist.name, questions: dbChecklist.questions, id: dbChecklist._id.toString() })
+    res.status(201).send({ name: dbChecklist.name, questions: dbChecklist.questions, id: dbChecklist._id.toString() })
+  } catch (e) {
+    console.log(e) // TODO: dev only
+    res.status(404).send(JSON.stringify(e))
+  }  
+})
+
+app.get('/checklists', jwtGuard, async (req, res) => {
+  const userId = req.user.sub // form jwtGuard
+
+  if (!userId) {
+    res.status(404).send('No user id provided')
+
+    return
+  }
+
+  try {
+    const checklists = (await Checklist.find({ userId })).map(({ _id, name, questions }) => {
+      return ({ id: _id, name, questions})
+    }) // TODO: error handling
+  
+    res.status(200).send(checklists)
   } catch (e) {
     console.log(e) // TODO: dev only
     res.status(404).send(JSON.stringify(e))
