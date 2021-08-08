@@ -24,6 +24,7 @@ app.use((req, res, next) => {
   // TODO: more sophisticated cors handle
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+  res.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE")
 
   next()
 })
@@ -60,7 +61,7 @@ app.post('/login', async (req, res) => {
 
 app.post('/checklists', jwtGuard, async (req, res) => {
   const checklistData = req.body
-  const userId = req.user.sub // form jwtGuard
+  const userId = req.user.sub // from jwtGuard
 
   try {
     const { name, questions } = checklistData
@@ -73,11 +74,11 @@ app.post('/checklists', jwtGuard, async (req, res) => {
   } catch (e) {
     console.log(e) // TODO: dev only
     res.status(404).send(JSON.stringify(e))
-  }  
+  }
 })
 
 app.get('/checklists', jwtGuard, async (req, res) => {
-  const userId = req.user.sub // form jwtGuard
+  const userId = req.user.sub // from jwtGuard
 
   if (!userId) {
     res.status(404).send('No user id provided')
@@ -94,7 +95,26 @@ app.get('/checklists', jwtGuard, async (req, res) => {
   } catch (e) {
     console.log(e) // TODO: dev only
     res.status(404).send(JSON.stringify(e))
-  }  
+  }
+})
+
+app.delete('/checklists/:checklistId', jwtGuard, async (req, res) => {
+  const checklistId = req.params.checklistId
+
+  if (!checklistId) {
+    res.status(404).send('No checklist id provided')
+
+    return
+  }
+
+  try {
+    await Checklist.findOneAndDelete({ _id: checklistId }) // TODO: error handling
+  
+    res.status(200).send()
+  } catch (e) {
+    console.log(e) // TODO: dev only
+    res.status(404).send(JSON.stringify(e))
+  }
 })
 
 app.listen(PORT, () => {
