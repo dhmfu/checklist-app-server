@@ -117,6 +117,27 @@ app.delete('/checklists/:checklistId', jwtGuard, async (req, res) => {
   }
 })
 
+app.put('/checklists/:checklistId', jwtGuard, async (req, res) => {
+  const checklistId = req.params.checklistId
+
+  if (!checklistId) {
+    res.status(404).send('No checklist id provided')
+
+    return
+  }
+
+  const questions = req.body
+
+  try {
+    await Checklist.updateOne({ _id: checklistId }, { questions }) // TODO: error handling
+  
+    res.status(200).send()
+  } catch (e) {
+    console.log(e) // TODO: dev only
+    res.status(404).send(JSON.stringify(e))
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`App listening at http://localhost:${PORT}`)
 })
