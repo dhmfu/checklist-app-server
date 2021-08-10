@@ -10,7 +10,7 @@ const User = require('./models/user')
 const Checklist = require('./models/checklist')
 
 const PORT = process.env.PORT || 3000
-const MONGO_URL = process.env.PORT || 'mongodb://localhost:27017/checklists'
+const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/checklists'
 const JWT_SECRET = process.env.JWT_SECRET || 'asdjhwqpiguh[23hr[fisdnvvz,m[oiewrajkd'
 
 const jwtGuard = expressJwt({ secret: JWT_SECRET, algorithms: ['HS256'] })
