@@ -9,14 +9,13 @@ const app = express()
 const User = require('./models/user')
 const Checklist = require('./models/checklist')
 
-// TODO: move this somewhere else
-const PORT = 3000
-const MONGOOSE_URL = 'mongodb://localhost:27017/checklists'
-const JWT_SECRET = 'asdjhwqpiguh[23hr[fisdnvvz,m[oiewrajkd'
+const PORT = process.env.PORT || 3000
+const MONGO_URL = process.env.PORT || 'mongodb://localhost:27017/checklists'
+const JWT_SECRET = process.env.JWT_SECRET || 'asdjhwqpiguh[23hr[fisdnvvz,m[oiewrajkd'
 
 const jwtGuard = expressJwt({ secret: JWT_SECRET, algorithms: ['HS256'] })
 
-mongoose.connect(MONGOOSE_URL, { useNewUrlParser: true })
+mongoose.connect(MONGO_URL, { useNewUrlParser: true })
 
 app.use(express.json())
 

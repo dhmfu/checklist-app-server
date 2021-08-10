@@ -15,5 +15,8 @@
     "express-jwt": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.3"
+  },
+  "engines": {
+    "node": "14.x"
   }
 }
