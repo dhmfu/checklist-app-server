@@ -28,6 +28,10 @@ app.use((req, res, next) => {
   next()
 })
 
+app.get('/', (req, res) => {
+  res.send('Checklist-app')
+})
+
 app.post('/sign-up', async (req, res) => {
   try {
     const { email, password, name } = req.body
