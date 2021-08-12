@@ -28,10 +28,6 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get('/', (req, res) => {
-  res.send('Checklist-app')
-})
-
 app.post('/sign-up', async (req, res) => {
   try {
     const { email, password, name } = req.body
@@ -41,9 +37,16 @@ app.post('/sign-up', async (req, res) => {
     await newUser.save() // TODO: error handling
   
     res.status(201).send()
-  } catch (e) {
-    console.log(e) // TODO: dev only
-    res.status(404).send(JSON.stringify(e))
+  } catch (error) {
+    console.log(error) // TODO: dev only
+    let errorMessage = 'Not found', statusCode = 404
+
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.email) {
+      errorMessage = 'duplicatedEmail'
+      statusCode = 400
+    }
+
+    res.status(statusCode).send(errorMessage)
   }
 })
 
@@ -58,7 +61,7 @@ app.post('/login', async (req, res) => {
 
     res.status(200).send(token)
   } else {
-    res.status(401).send('Incorrect email or password')
+    res.status(401).send('incorrectCredentials')
   }
 })
 
