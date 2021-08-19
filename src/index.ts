@@ -1,17 +1,19 @@
-const express = require('express')
+import express from 'express'
 
-const jwt = require('jsonwebtoken')
-const expressJwt = require('express-jwt')
-const mongoose = require('mongoose')
+import jwt from 'jsonwebtoken'
+import expressJwt from 'express-jwt'
+import mongoose from 'mongoose'
+
+import { User } from './models/user'
+import { Checklist } from './models/checklist'
 
 const app = express()
-
-const User = require('./models/user')
-const Checklist = require('./models/checklist')
 
 const PORT = process.env.PORT || 3000
 const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/checklists'
 const JWT_SECRET = process.env.JWT_SECRET || 'asdjhwqpiguh[23hr[fisdnvvz,m[oiewrajkd'
+
+const productionMode = process.env.NODE_ENV === 'production'
 
 const jwtGuard = expressJwt({ secret: JWT_SECRET, algorithms: ['HS256'] })
 
@@ -67,12 +69,12 @@ app.post('/login', async (req, res) => {
 
 app.post('/checklists', jwtGuard, async (req, res) => {
   const checklistData = req.body
-  const userId = req.user.sub // from jwtGuard
+  const userId = req.user && (req.user as any).sub // from jwtGuard
 
   try {
     const { name, questions } = checklistData
 
-    const questionsMapped = questions.map(question => ({ checked: false, term: question }))
+    const questionsMapped = questions.map((question: any) => ({ checked: false, term: question }))
   
     const dbChecklist = await new Checklist({ name, questions: questionsMapped, userId }).save() // TODO: error handling
   
@@ -84,7 +86,7 @@ app.post('/checklists', jwtGuard, async (req, res) => {
 })
 
 app.get('/checklists', jwtGuard, async (req, res) => {
-  const userId = req.user.sub // from jwtGuard
+  const userId = req.user && (req.user as any).sub // from jwtGuard
 
   if (!userId) {
     res.status(404).send('No user id provided')
@@ -145,5 +147,7 @@ app.put('/checklists/:checklistId', jwtGuard, async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`App listening at http://localhost:${PORT}`)
+  if (!productionMode) {
+    console.log(`App listening at http://localhost:${PORT}`)
+  }
 })

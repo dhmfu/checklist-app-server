@@ -1,7 +1,14 @@
-const mongoose = require("mongoose")
-const bcrypt = require("bcryptjs")
+import { Schema, model, Model } from 'mongoose'
 
-const userSchema = new mongoose.Schema({
+import bcrypt from "bcryptjs"
+
+interface IUser {
+  email: string;
+  name: string;
+  password: string;
+}
+
+const userSchema = new Schema<IUser, Model<IUser>, IUser>({
   email: { type: String, unique: true },
   name: String,
   password: String,
@@ -21,8 +28,12 @@ userSchema.pre('save', function(next) {
   }
 })
 
+interface UserMethods {
+  checkPassword(password: string): Promise<boolean>
+}
+
 userSchema.method('checkPassword', async function(password) {
   return await bcrypt.compare(password, this.password) // TODO: error handling
 })
 
-module.exports = mongoose.model("User", userSchema)
+export const User = model<IUser, any, Model<IUser, UserMethods>>("User", userSchema)
